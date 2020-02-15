@@ -11,12 +11,12 @@ server = do
             lc.pages[i].busy = true
             return res lc.pages[i]
         page-manager.queue.push {res, rej}
-      free: (page) ->
+      free: (obj) ->
         if page-manager.queue.length =>
           ret = page-manager.queue.splice(0, 1).0
-          ret.res page
+          ret.res obj
         else
-          page.busy = false
+          obj.busy = false
     puppeteer.launch!
       .then ->
         lc.browser = it
@@ -38,20 +38,19 @@ server = do
           api-lc = {}
           page-manager.get!
             .then ->
-              api-lc <<< it
+              api-lc.obj = it
               promise = (
-                if req.body.url => api-lc.page.goto req.body.url
-                else if req.body.html => lc.page.setContent req.body.html, {waitUntil: "domcontentloaded"}
+                if req.body.url => api-lc.obj.page.goto req.body.url
+                else if req.body.html => api-lc.obj.page.setContent req.body.html, {waitUntil: "domcontentloaded"}
+                else Promise.reject(new Error("param incorrect"))
               )
-            .then -> api-lc.page.screenshot!
+            .then -> api-lc.obj.page.screenshot!
             .then ->
               res.contentType \image/png
               res.send it
-            .catch ->
-              console.log it
-              res.status 500 .send!
+            .catch -> res.status 500 .send!
             .then ->
-              page-manager.free api-lc
+              page-manager.free api-lc.obj
 
        
         console.log "[Server] Express Initialized in #{app.get \env} Mode".green

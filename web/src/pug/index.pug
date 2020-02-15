@@ -18,6 +18,7 @@ html
         #btn.btn.btn-primary.mr-2 Send
         .ldld.line-height-1em: .ld.ld-ring.text-lg.ld-spin
       #root.d-flex.flex-wrap.justify-content-between.align-items-center.my-4
+    +script("https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js")
     +script("/assets/lib/ldui/ldui.min.js")
     script: :lsc
       ldld = new ldLoader root: '.ldld'
@@ -26,6 +27,14 @@ html
         payload = url: input.value or "https://github.com"
         if code.value => payload = html: code.value
         get payload
+      lc = {idx: 0}
+      lc.handle = setInterval (->
+        get {url: "https://github.com"}
+        lc.idx++
+        if lc.idx > 10 => clearInterval lc.handle
+      ), 1000
+
+
       get = (payload) ->
         ld$.fetch "http://localhost:9010/api/", {method: \POST}, {json: payload}
           .then -> it.arrayBuffer!
@@ -38,6 +47,7 @@ html
             img.src = url
           .then -> ldld.off!
           .catch ->
+            console.log it
             console.log "failed to open url."
             ldld.off!
             

@@ -1,0 +1,30 @@
+{
+  "author": "zbryikt",
+  "name": "screenshot",
+  "license": "MIT",
+  "description": "a simple server accepting request to take screenshot",
+  "version": "0.0.1",
+  "homepage": "https://github.com/plotdb/screenshot",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/plotdb/screenshot"
+  },
+  "engines": {
+    "node": ">=0.12.6",
+    "npm": ">=1.2.2"
+  },
+  "scripts": {
+    "start": "./node_modules/.bin/lsc lib/main.ls",
+    "dev": "cd web; ../node_modules/.bin/lsc ../node_modules/template/server.ls"
+  },
+  "devDependencies": {
+    "template": "github:zbryikt/template#v2"
+  },
+  "dependencies": {
+    "LiveScript": ">=1.2.0",
+    "body-parser": "^1.19.0",
+    "colors": "^1.4.0",
+    "express": "^4.17.1",
+    "puppeteer": "^2.1.1"
+  }
+}

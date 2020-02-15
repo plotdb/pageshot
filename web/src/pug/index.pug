@@ -1,0 +1,44 @@
+doctype html
+html
+  include /../../static/assets/lib/ldui/pug/ldui.pug
+  head
+    +css("https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css")
+    +css("/assets/lib/ldui/ldui.min.css")
+    style(type="text/css"): :stylus
+      #root img { height: 280px; margin: 0 .5em 1em 0; border-radius: 10px; box-shadow: 0 2px 3px rgba(0,0,0,.3) }
+  body
+    .p-4: .w-768.mx-auto.rwd.typeset.heading-contrast
+      .my-4
+        h1.mb-0 Screenshot
+        .text-muted simple express server that accepts URL or html code and respond with screenshot.
+      input#input.form-control(type="text",placeholder="URL, e.g.: https://github.com")
+      .text-center: .text-muted.text-sm.my-2 or
+      textarea#code.form-control(rows="5",placeholder="html code")
+      .d-flex.align-items-center.my-2
+        #btn.btn.btn-primary.mr-2 Send
+        .ldld.line-height-1em: .ld.ld-ring.text-lg.ld-spin
+      #root.d-flex.flex-wrap.justify-content-between.align-items-center.my-4
+    +script("/assets/lib/ldui/ldui.min.js")
+    script: :lsc
+      ldld = new ldLoader root: '.ldld'
+      btn.addEventListener \click, ->
+        ldld.on!
+        payload = url: input.value or "https://github.com"
+        if code.value => payload = html: code.value
+        get payload
+      get = (payload) ->
+        ld$.fetch "http://localhost:9010/api/", {method: \POST}, {json: payload}
+          .then -> it.arrayBuffer!
+          .then -> URL.createObjectURL(new Blob([new Uint8Array(it, 0, it.length)], {type: "image/png"}))
+          .then (url) -> new Promise (res, rej) ->
+            img = new Image!
+            img.onload = ->
+              root.appendChild img
+              res!
+            img.src = url
+          .then -> ldld.off!
+          .catch ->
+            console.log "failed to open url."
+            ldld.off!
+            
+      

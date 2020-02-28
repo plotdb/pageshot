@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+mkdir -p dist
+echo "build lib/screenshot.ls -> dist/screenshot.js ..."
+./node_modules/.bin/lsc -cbp lib/screenshot.ls > dist/screenshot.js
+echo "minifying screenshot.js ..."
+./node_modules/.bin/uglifyjs dist/screenshot.js > dist/screenshot.min.js
+echo "done."

@@ -2,6 +2,7 @@
   "author": "zbryikt",
   "name": "screenshot",
   "license": "MIT",
+  "main": "dist/screenshot.js",
   "description": "a simple server accepting request to take screenshot",
   "version": "0.0.1",
   "homepage": "https://github.com/plotdb/screenshot",
@@ -14,14 +15,15 @@
     "npm": ">=1.2.2"
   },
   "scripts": {
-    "start": "./node_modules/.bin/lsc lib/main.ls",
+    "start": "./node_modules/.bin/lsc lib/server.ls",
     "dev": "cd web; ../node_modules/.bin/lsc ../node_modules/template/server.ls"
   },
   "devDependencies": {
-    "template": "github:zbryikt/template#v2"
+    "template": "github:zbryikt/template#v2",
+    "LiveScript": ">=1.2.0",
+    "uglify-js": "=3.2.0"
   },
   "dependencies": {
-    "LiveScript": ">=1.2.0",
     "body-parser": "^1.19.0",
     "colors": "^1.4.0",
     "express": "^4.17.1",

@@ -15,8 +15,11 @@ html
       .text-center: .text-muted.text-sm.my-2 or
       textarea#code.form-control(rows="5",placeholder="html code")
       .d-flex.align-items-center.my-2
-        #btn.btn.btn-primary.mr-2 Send
-        .ldld.line-height-1em: .ld.ld-ring.text-lg.ld-spin
+        .flex-grow-1.d-flex.align-items-center
+          #btn.btn.btn-primary.mr-2 Send
+          .ldld.line-height-1em: .ld.ld-ring.text-lg.ld-spin
+        div
+          #btnbatch.btn.btn-primary Batch 10 Times
       #root.d-flex.flex-wrap.justify-content-between.align-items-center.my-4
     +script("https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js")
     +script("/assets/lib/ldui/ldui.min.js")
@@ -28,12 +31,29 @@ html
         if code.value => payload = html: code.value
         get payload
       lc = {idx: 0}
-      lc.handle = setInterval (->
-        get {url: "https://github.com"}
-        lc.idx++
-        if lc.idx > 10 => clearInterval lc.handle
-      ), 1000
 
+      batch-url = <[
+        https://github.com
+        https://google.com
+        https://facebook.com
+        https://youtube.com
+        https://baidu.com
+        https://tmall.com
+        https://qq.com
+        https://taobao.com
+        https://wikipedia.org
+        https://yahoo.com
+      ]>
+      batch = ->
+        if batch.count > 0 =>
+          get {url: batch-url[batch.count % 10]}
+          console.log batch.count
+          batch.count--
+          batch.handler = setTimeout batch, 1000
+        else batch.handler = null
+      btnbatch.addEventListener \click, ->
+        batch.count = 10
+        if !batch.handler => batch!
 
       get = (payload) ->
         ld$.fetch "http://localhost:9010/api/", {method: \POST}, {json: payload}
@@ -50,5 +70,14 @@ html
             console.log it
             console.log "failed to open url."
             ldld.off!
+            img = new Image!
+            img.onload = -> root.appendChild img
+            timeout = """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+            <rect x="0" y="0" width="200" height="200" fill="\#999"/>
+            <text x="100" y="75" dominant-baseline="middle" text-anchor="middle" fill="\#eee" font-family="sans-serif">TIMEOUT</text>
+            </svg>
+            """
+            img.src = "data:image/svg+xml,#{encodeURIComponent(timeout)}"
             
-      
+

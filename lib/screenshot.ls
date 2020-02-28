@@ -9,6 +9,19 @@ screenshot = (opt = {}) ->
   @
 
 screenshot.prototype = Object.create(Object.prototype) <<< do
+  shot: (payload = {}) ->
+    lc = {}
+    @get!
+      .then (obj) ->
+        lc.obj = obj
+        if payload.html => obj.page.setContent payload.html, {waitUntil: "domcontentloaded"}
+        else if payload.url => obj.page.goto payload.url
+        else return Promise.reject(new Error("missing url or html in screenshot.shot"))
+      .then -> lc.obj.page.screenshot!
+      .then -> lc.thumb = it
+      .then ~> @free lc.obj
+      .then -> return lc.thumb
+
   get: -> new Promise (res, rej) ~>
     for i from 0 til @count =>
       if !@pages[i].busy =>

@@ -14,6 +14,14 @@ server = do
           next!
         app.post \/api/, (req, res) ->
           lc = {}
+          payload = if req.body.url => {url: req.body.url} else {html: req.body.html or ""}
+          ss.shot payload
+            .then ->
+              res.contentType \image/png
+              res.send it
+            .catch -> res.status 500 .send!
+
+          /*
           ss.get!
             .then ->
               lc.obj = it
@@ -28,7 +36,8 @@ server = do
               res.send it
             .catch -> res.status 500 .send!
             .then -> ss.free lc.obj
-       
+          */
+
         console.log "[Server] Express Initialized in #{app.get \env} Mode".green
         server = app.listen opt.port, ->
           delta = if opt.start-time => "( takes #{Date.now! - opt.start-time}ms )" else ''

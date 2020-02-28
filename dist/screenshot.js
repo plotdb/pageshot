@@ -15,13 +15,37 @@ screenshot = function(opt){
   return this;
 };
 screenshot.prototype = import$(Object.create(Object.prototype), {
+  shot: function(payload){
+    var lc, this$ = this;
+    payload == null && (payload = {});
+    lc = {};
+    return this.get().then(function(obj){
+      lc.obj = obj;
+      if (payload.html) {
+        return obj.page.setContent(payload.html, {
+          waitUntil: "domcontentloaded"
+        });
+      } else if (payload.url) {
+        return obj.page.goto(payload.url);
+      } else {
+        return Promise.reject(new Error("missing url or html in screenshot.shot"));
+      }
+    }).then(function(){
+      return lc.obj.page.screenshot();
+    }).then(function(it){
+      return lc.thumb = it;
+    }).then(function(){
+      return this$.free(lc.obj);
+    }).then(function(){
+      return lc.thumb;
+    });
+  },
   get: function(){
     var this$ = this;
     return new Promise(function(res, rej){
       var i$, to$, i;
       for (i$ = 0, to$ = this$.count; i$ < to$; ++i$) {
         i = i$;
-        console.log(">", this$.pages[i]);
         if (!this$.pages[i].busy) {
           this$.pages[i].busy = true;
           return res(this$.pages[i]);

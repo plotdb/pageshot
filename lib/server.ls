@@ -21,23 +21,6 @@ server = do
               res.send it
             .catch -> res.status 500 .send!
 
-          /*
-          ss.get!
-            .then ->
-              lc.obj = it
-              promise = (
-                if req.body.url => lc.obj.page.goto req.body.url
-                else if req.body.html => lc.obj.page.setContent req.body.html, {waitUntil: "domcontentloaded"}
-                else Promise.reject(new Error("param incorrect"))
-              )
-            .then -> lc.obj.page.screenshot!
-            .then ->
-              res.contentType \image/png
-              res.send it
-            .catch -> res.status 500 .send!
-            .then -> ss.free lc.obj
-          */
-
         console.log "[Server] Express Initialized in #{app.get \env} Mode".green
         server = app.listen opt.port, ->
           delta = if opt.start-time => "( takes #{Date.now! - opt.start-time}ms )" else ''

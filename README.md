@@ -26,6 +26,22 @@ For example:
         img.src = url
 
 
+## API
+
+    require! <[screenshot]>
+    ss = new screenshot opt
+    lc = {}
+    ss.init!
+      .then -> ss.get!
+      .then (obj) ->
+        lc.obj = obj
+        # either one of following
+        # obj.page.setContent html, {waitUntil: "domcontentloaded"}
+        # obj.page.goto url
+      .then -> lc.obj.page.screenshot!
+      .then -> ss.free lc.obj
+
+
 ## Configuration
 
 edit config.json for changing listening port. default 9010

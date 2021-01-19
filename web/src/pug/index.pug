@@ -1,9 +1,11 @@
 doctype html
 html
-  include /../../static/assets/lib/ldui/pug/ldui.pug
+  include /../../static/assets/lib/bootstrap.ldui/main/index.pug
   head
-    +css("https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css")
-    +css("/assets/lib/ldui/ldui.min.css")
+    +css("assets/lib/bootstrap/main/css/bootstrap.min.css")
+    +css("assets/lib/bootstrap.ldui/main/bootstrap.ldui.min.css")
+    +css("assets/lib/ldloader/main/ldld.min.css")
+    +css("assets/lib/@loadingio/loading.css/main/loading.min.css")
     style(type="text/css"): :stylus
       #root img { height: 280px; margin: 0 .5em 1em 0; border-radius: 10px; box-shadow: 0 2px 3px rgba(0,0,0,.3) }
   body
@@ -17,12 +19,13 @@ html
       .d-flex.align-items-center.my-2
         .flex-grow-1.d-flex.align-items-center
           #btn.btn.btn-primary.mr-2 Send
+          #btnalt.btn.btn-primary.mr-2 Print
           .ldld.line-height-1em: .ld.ld-ring.text-lg.ld-spin
         div
           #btnbatch.btn.btn-primary Batch 10 Times
       #root.d-flex.flex-wrap.justify-content-between.align-items-center.my-4
-    +script("https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js")
-    +script("/assets/lib/ldui/ldui.min.js")
+    +script("assets/lib/ldloader/main/ldld.min.js")
+    +script("assets/lib/@loadingio/ldquery/main/ldq.min.js")
     script: :lsc
       ldld = new ldLoader root: '.ldld'
       btn.addEventListener \click, ->
@@ -30,6 +33,11 @@ html
         payload = url: input.value or "https://github.com"
         if code.value => payload = html: code.value
         get payload
+      btnalt.addEventListener \click, ->
+        ldld.on!
+        payload = url: input.value or "https://github.com"
+        if code.value => payload = html: code.value
+        print payload
       lc = {idx: 0}
 
       batch-url = <[
@@ -55,8 +63,31 @@ html
         batch.count = 10
         if !batch.handler => batch!
 
+      print = (payload) ->
+        ld$.fetch "/api/print", {method: \POST}, {json: payload, timeout: 200 * 1000 }
+          .then -> it.arrayBuffer!
+          .then ->
+            href = URL.createObjectURL(new Blob([new Uint8Array(it, 0, it.length)], {type: "application/pdf"}))
+            n = ld$.create name: \a, attr: {href,download: 'result.pdf'}
+            document.body.appendChild n
+            n.click!
+            document.body.removeChild n
+          .then -> ldld.off!
+          .catch ->
+            console.log "failed to open url: ", it
+            ldld.off!
+            img = new Image!
+            img.onload = -> root.appendChild img
+            timeout = """
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+            <rect x="0" y="0" width="200" height="200" fill="\#999"/>
+            <text x="100" y="75" dominant-baseline="middle" text-anchor="middle" fill="\#eee" font-family="sans-serif">TIMEOUT</text>
+            </svg>
+            """
+            img.src = "data:image/svg+xml,#{encodeURIComponent(timeout)}"
+            
       get = (payload) ->
-        ld$.fetch "http://localhost:9010/api/", {method: \POST}, {json: payload}
+        ld$.fetch "/api/screenshot", {method: \POST}, {json: payload}
           .then -> it.arrayBuffer!
           .then -> URL.createObjectURL(new Blob([new Uint8Array(it, 0, it.length)], {type: "image/png"}))
           .then (url) -> new Promise (res, rej) ->
@@ -67,8 +98,7 @@ html
             img.src = url
           .then -> ldld.off!
           .catch ->
-            console.log it
-            console.log "failed to open url."
+            console.log "failed to open url: ", it
             ldld.off!
             img = new Image!
             img.onload = -> root.appendChild img

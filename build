@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
+set -euo pipefail
+rm -rf dist
 mkdir -p dist
-echo "build lib/screenshot.ls -> dist/screenshot.js ..."
-./node_modules/.bin/lsc -cbp lib/screenshot.ls > dist/screenshot.js
-echo "minifying screenshot.js ..."
-./node_modules/.bin/uglifyjs dist/screenshot.js > dist/screenshot.min.js
+mkdir -p bin
+
+echo "build src/pageshot.ls -> dist/pageshot.js ..."
+npx lsc -cbp src/pageshot.ls > dist/pageshot.js
+echo "build src/server.ls -> dist/server.js ..."
+echo "#!/usr/bin/env node" > dist/server.js
+npx lsc -cbp src/server.ls >> dist/server.js
 echo "done."

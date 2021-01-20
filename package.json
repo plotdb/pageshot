@@ -6,6 +6,10 @@
   "bin": {
     "pageshot": "./dist/server.js"
   },
+  "files": [
+    "dist/**/*",
+    "docker/**/*"
+  ],
   "description": "a simple server accepting request to take website screenshot in png / pdf formats",
   "version": "0.1.0",
   "homepage": "https://github.com/plotdb/pageshot",

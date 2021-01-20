@@ -1,5 +1,8 @@
 t1 = Date.now!
-require! <[fs path template express body-parser colors yargs ./pageshot]>
+require! <[fs path template express body-parser colors yargs]>
+
+lib = path.dirname fs.realpathSync(__filename.replace(/\(.+\)$/,''))
+pageshot = require "#lib/pageshot"
 
 server = do
   init: (opt) ->

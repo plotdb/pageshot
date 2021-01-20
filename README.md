@@ -15,9 +15,19 @@ Puppeteer runs headless browser which can access content within intranet, and th
 
 ## Usage
 
-install required modules by `npm install`, then run `npm start`. this will start a screenshot server listening to specific port configured in config.json.
+install:
 
-to take a screenshot, send a POST request to `<domain>/api/screenshot` with a payload in below format:
+    npm install --save @plotdb/pageshot
+
+
+run api server:
+
+    npx pageshot -p <port>
+
+this will start a screenshot server listening to specific port.
+
+
+To take a screenshot, send a POST request to `<domain>/api/screenshot` with a payload in below format:
 
     { url: "url-to-screenshot"}
 
@@ -50,7 +60,7 @@ There are 3 api curently available:
 
 ## API
 
-init a `pageshot` page mananger:
+`@plotdb/pageshot` also provides JS api for those http api counterpart. To use JS api, first init a `pageshot` page mananger:
 
     require! <[pageshot]>
     ss = new pageshot( opt )

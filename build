@@ -5,8 +5,9 @@ mkdir -p dist
 mkdir -p bin
 
 echo "build src/pageshot.ls -> dist/pageshot.js ..."
-npx lsc -cbp src/pageshot.ls > dist/pageshot.js
+npx lsc -cbp --no-header src/pageshot.ls > dist/pageshot.js
 echo "build src/server.ls -> dist/server.js ..."
 echo "#!/usr/bin/env node" > dist/server.js
-npx lsc -cbp src/server.ls >> dist/server.js
+npx lsc -cbp --no-header src/server.ls >> dist/server.js
+chmod 755 dist/server.js
 echo "done."

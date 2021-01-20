@@ -1,3 +1,10 @@
+# 0.1.1
+
+ - make bin file executable.
+ - require pageshot module correctly by calculating correct path to it.
+ - generate dist files without livescript header.
+
+
 # 0.1.0
 
  - kill browser process on exit with node-cleanup.

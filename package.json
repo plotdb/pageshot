@@ -38,6 +38,7 @@
     "colors": "^1.4.0",
     "easy-pdf-merge": "^0.2.6",
     "express": "^4.17.1",
+    "node-cleanup": "^2.1.2",
     "puppeteer": "^2.1.1"
   },
   "frontendDependencies": {

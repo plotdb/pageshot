@@ -1,4 +1,4 @@
-require! <[puppeteer]>
+require! <[puppeteer easy-pdf-merge node-cleanup]>
 
 BrowserPool = (opt = {}) ->
   @opt = opt
@@ -6,8 +6,7 @@ BrowserPool = (opt = {}) ->
   @retry-count = 5
   @queue = []
 
-  <[beforeExit uncaughtException SIGHUP SIGINT SIGQUIT SIGILL SIGTRAP
-  SIGABRT SIGBUS SIGFPE SIGUSR1 SIGSEGV SIGUSR2 SIGTERM]>.map (n) ~> process.on n, ~> @destroy!; return 0
+  node-cleanup (ec, signal) ~> @destroy!; node-cleanup.uninstall!; return false
 
   @
 

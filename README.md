@@ -1,6 +1,6 @@
 # pageshot
 
-simple express server and APIs powered by puppeteer for following
+simple express server and APIs powered by puppeteer for following purpose:
 
  - web page screenshot
  - web page to pdf
@@ -17,7 +17,7 @@ Puppeteer runs headless browser which can access content within intranet, and th
 
 install required modules by `npm install`, then run `npm start`. this will start a screenshot server listening to specific port configured in config.json.
 
-to take a screenshot, send a POST request to `<domain>/api` with a payload in below format:
+to take a screenshot, send a POST request to `<domain>/api/screenshot` with a payload in below format:
 
     { url: "url-to-screenshot"}
 
@@ -36,12 +36,24 @@ For example:
         img.src = url
 
 
+There are 3 api curently available:
+
+ - POST `/api/screenshot` - taking screenshot in png format. 
+ - POST `/api/print` - taking screenshot in pdf format. input similar to `/api/screenshot`.
+ - POST `/api/merge` - merge multiple document into one pdf. payload format:
+   - `list`: a list of documents to merge. Each is an object with following format:
+     - `html`: html code to print and merge.
+     - `url`: url for web page to print and merge. omitted when `html` is available
+     - `pdffile`: file path for pdf file to merge.
+     - `pdflink`: url for pdf file to merge.
+       - note: `pdffile` and `pdflink` only work in nodeJS API when calling with `trust-input` set to true. see `API`.
+
 ## API
 
-init a screenshot page mananger:
+init a `pageshot` page mananger:
 
-    require! <[screenshot]>
-    ss = new screenshot opt
+    require! <[pageshot]>
+    ss = new pageshot( opt )
 
 options:
 
@@ -58,30 +70,31 @@ screenshot object API:
      - page.setContent "some html code", {waitUntil, "domcontentloaded"}
      - page.goto "some-url"
  * free(obj) - free this page.
+ * print({url, html}): print specific document.
+ * screenshot({url, html}): screenshot specific document.
+ * merge(payload, trustInput): merge multiple document.
+   - `payload`: as described in previous section.
+   - `trustInput`: default false. when set to true, `pdffile` and `pdflink` options are enabled.
 
 
 Sample usage:
 
     lc = {}
-    ss.init!
-      # take a screenshot of google.com through ss.shot API
-      .then -> ss.shot url: "https://google.com"
+    ps = new pageshot!
+    ps.init!
+      # take a screenshot of google.com through ps.screenshot API
+      .then -> ps.screenshot url: "https://google.com"
       .then -> fs.write-file-sync "out.png", it
 
       # ... or, manually operate the page instance
-      .then -> ss.get!
+      .then -> ps.get!
       .then (obj) ->
         lc.obj = obj
         # either one of following
         # obj.page.setContent html, {waitUntil: "domcontentloaded"}
         # obj.page.goto url
       .then -> lc.obj.page.screenshot!
-      .then -> ss.free lc.obj
-
-
-## Configuration
-
-edit config.json for changing listening port. default 9010
+      .then -> ps.free lc.obj
 
 
 ## PDF Merge

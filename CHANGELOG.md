@@ -1,6 +1,6 @@
 # 0.1.0
 
- - kill browser process on exit.
+ - kill browser process on exit with node-cleanup.
  - add print and merge functionality
  - add dev server for building `web` src yet still accept api request to screenshot and print.
  - upgrade modules

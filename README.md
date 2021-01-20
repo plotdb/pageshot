@@ -1,6 +1,16 @@
-# screenshot
+# pageshot
 
-simple express server that accepts URL or html code and respond with screenshot. powered by puppeteer.
+simple express server and APIs powered by puppeteer for following
+
+ - web page screenshot
+ - web page to pdf
+ - pdf merge
+
+
+## Security Note
+
+Puppeteer runs headless browser which can access content within intranet, and thus might be vulnerable to [SSRF](https://en.wikipedia.org/wiki/Server-side_request_forgery) exploit. To accept arbitrary user input, try running pageshot server in a container with proper network configuration.
+
 
 
 ## Usage
@@ -72,6 +82,17 @@ Sample usage:
 ## Configuration
 
 edit config.json for changing listening port. default 9010
+
+
+## PDF Merge
+
+PDF merging is provided by `easy-pdf-merge`, which in turn depends on related `java` package. Java is needed for using this functionality, and can be installed via following commands:
+
+
+    wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | sudo apt-key add -
+    sudo apt-get install software-properties-common
+    sudo add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/
+    sudo apt-get update && sudo apt-get install adoptopenjdk-8-hotspot
 
 
 ## License

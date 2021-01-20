@@ -19,7 +19,8 @@ html
       .d-flex.align-items-center.my-2
         .flex-grow-1.d-flex.align-items-center
           #btn.btn.btn-primary.mr-2 Send
-          #btnalt.btn.btn-primary.mr-2 Print
+          #btnprint.btn.btn-primary.mr-2 Print
+          #btnmerge.btn.btn-primary.mr-2 Merge
           .ldld.line-height-1em: .ld.ld-ring.text-lg.ld-spin
         div
           #btnbatch.btn.btn-primary Batch 10 Times
@@ -33,11 +34,19 @@ html
         payload = url: input.value or "https://github.com"
         if code.value => payload = html: code.value
         get payload
-      btnalt.addEventListener \click, ->
+      btnprint.addEventListener \click, ->
         ldld.on!
         payload = url: input.value or "https://github.com"
         if code.value => payload = html: code.value
         print payload
+      btnmerge.addEventListener \click, ->
+        ldld.on!
+        payload = list: [
+          * url: input.value or "https://github.com"
+          * html: code.value or "hello world"
+        ]
+        merge payload
+
       lc = {idx: 0}
 
       batch-url = <[
@@ -63,6 +72,32 @@ html
         batch.count = 10
         if !batch.handler => batch!
 
+      error-handler = ->
+        console.log "failed to open url: ", it
+        ldld.off!
+        img = new Image!
+        img.onload = -> root.appendChild img
+        timeout = """
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
+        <rect x="0" y="0" width="200" height="200" fill="\#999"/>
+        <text x="100" y="75" dominant-baseline="middle" text-anchor="middle"
+        fill="\#eee" font-family="sans-serif">TIMEOUT</text>
+        </svg>
+        """
+        img.src = "data:image/svg+xml,#{encodeURIComponent(timeout)}"
+
+      merge = (payload) ->
+        ld$.fetch "/api/merge", {method: \POST}, {json: payload, timeout: 200 * 1000 }
+          .then -> it.arrayBuffer!
+          .then ->
+            href = URL.createObjectURL(new Blob([new Uint8Array(it, 0, it.length)], {type: "application/pdf"}))
+            n = ld$.create name: \a, attr: {href,download: 'merged.pdf'}
+            document.body.appendChild n
+            n.click!
+            document.body.removeChild n
+          .then -> ldld.off!
+          .catch error-handler
+
       print = (payload) ->
         ld$.fetch "/api/print", {method: \POST}, {json: payload, timeout: 200 * 1000 }
           .then -> it.arrayBuffer!
@@ -73,19 +108,8 @@ html
             n.click!
             document.body.removeChild n
           .then -> ldld.off!
-          .catch ->
-            console.log "failed to open url: ", it
-            ldld.off!
-            img = new Image!
-            img.onload = -> root.appendChild img
-            timeout = """
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
-            <rect x="0" y="0" width="200" height="200" fill="\#999"/>
-            <text x="100" y="75" dominant-baseline="middle" text-anchor="middle" fill="\#eee" font-family="sans-serif">TIMEOUT</text>
-            </svg>
-            """
-            img.src = "data:image/svg+xml,#{encodeURIComponent(timeout)}"
-            
+          .catch error-handler
+
       get = (payload) ->
         ld$.fetch "/api/screenshot", {method: \POST}, {json: payload}
           .then -> it.arrayBuffer!
@@ -97,17 +121,5 @@ html
               res!
             img.src = url
           .then -> ldld.off!
-          .catch ->
-            console.log "failed to open url: ", it
-            ldld.off!
-            img = new Image!
-            img.onload = -> root.appendChild img
-            timeout = """
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">
-            <rect x="0" y="0" width="200" height="200" fill="\#999"/>
-            <text x="100" y="75" dominant-baseline="middle" text-anchor="middle" fill="\#eee" font-family="sans-serif">TIMEOUT</text>
-            </svg>
-            """
-            img.src = "data:image/svg+xml,#{encodeURIComponent(timeout)}"
-            
+          .catch error-handler
 

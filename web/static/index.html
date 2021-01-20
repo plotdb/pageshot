@@ -4,7 +4,7 @@
   border-radius: 10px;
   box-shadow: 0 2px 3px rgba(0,0,0,0.3);
 }
-</style></head><body><div class="p-4"><div class="w-768 mx-auto rwd typeset heading-contrast"><div class="my-4"><h1 class="mb-0">Screenshot</h1><div class="text-muted">simple express server that accepts URL or html code and respond with screenshot.</div></div><input class="form-control" id="input" type="text" placeholder="URL, e.g.: https://github.com"><div class="text-center"><div class="text-muted text-sm my-2">or</div></div><textarea class="form-control" id="code" rows="5" placeholder="html code"></textarea><div class="d-flex align-items-center my-2"><div class="flex-grow-1 d-flex align-items-center"><div class="btn btn-primary mr-2" id="btn">Send</div><div class="btn btn-primary mr-2" id="btnalt">Print</div><div class="ldld line-height-1em"><div class="ld ld-ring text-lg ld-spin"></div></div></div><div><div class="btn btn-primary" id="btnbatch">Batch 10 Times</div></div></div><div class="d-flex flex-wrap justify-content-between align-items-center my-4" id="root"></div></div></div><script type="text/javascript" src="assets/lib/ldloader/main/ldld.min.js"></script><script type="text/javascript" src="assets/lib/@loadingio/ldquery/main/ldq.min.js"></script><script>var ldld, lc, batchUrl, batch, print, get;
+</style></head><body><div class="p-4"><div class="w-768 mx-auto rwd typeset heading-contrast"><div class="my-4"><h1 class="mb-0">Screenshot</h1><div class="text-muted">simple express server that accepts URL or html code and respond with screenshot.</div></div><input class="form-control" id="input" type="text" placeholder="URL, e.g.: https://github.com"><div class="text-center"><div class="text-muted text-sm my-2">or</div></div><textarea class="form-control" id="code" rows="5" placeholder="html code"></textarea><div class="d-flex align-items-center my-2"><div class="flex-grow-1 d-flex align-items-center"><div class="btn btn-primary mr-2" id="btn">Send</div><div class="btn btn-primary mr-2" id="btnprint">Print</div><div class="btn btn-primary mr-2" id="btnmerge">Merge</div><div class="ldld line-height-1em"><div class="ld ld-ring text-lg ld-spin"></div></div></div><div><div class="btn btn-primary" id="btnbatch">Batch 10 Times</div></div></div><div class="d-flex flex-wrap justify-content-between align-items-center my-4" id="root"></div></div></div><script type="text/javascript" src="assets/lib/ldloader/main/ldld.min.js"></script><script type="text/javascript" src="assets/lib/@loadingio/ldquery/main/ldq.min.js"></script><script>var ldld, lc, batchUrl, batch, errorHandler, merge, print, get;
 ldld = new ldLoader({
   root: '.ldld'
 });
@@ -21,7 +21,7 @@ btn.addEventListener('click', function(){
   }
   return get(payload);
 });
-btnalt.addEventListener('click', function(){
+btnprint.addEventListener('click', function(){
   var payload;
   ldld.on();
   payload = {
@@ -33,6 +33,20 @@ btnalt.addEventListener('click', function(){
     };
   }
   return print(payload);
+});
+btnmerge.addEventListener('click', function(){
+  var payload;
+  ldld.on();
+  payload = {
+    list: [
+      {
+        url: input.value || "https://github.com"
+      }, {
+        html: code.value || "hello world"
+      }
+    ]
+  };
+  return merge(payload);
 });
 lc = {
   idx: 0
@@ -56,6 +70,44 @@ btnbatch.addEventListener('click', function(){
     return batch();
   }
 });
+errorHandler = function(it){
+  var img, timeout;
+  console.log("failed to open url: ", it);
+  ldld.off();
+  img = new Image();
+  img.onload = function(){
+    return root.appendChild(img);
+  };
+  timeout = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 150\">\n<rect x=\"0\" y=\"0\" width=\"200\" height=\"200\" fill=\"#999\"/>\n<text x=\"100\" y=\"75\" dominant-baseline=\"middle\" text-anchor=\"middle\"\nfill=\"#eee\" font-family=\"sans-serif\">TIMEOUT</text>\n</svg>";
+  return img.src = "data:image/svg+xml," + encodeURIComponent(timeout);
+};
+merge = function(payload){
+  return ld$.fetch("/api/merge", {
+    method: 'POST'
+  }, {
+    json: payload,
+    timeout: 200 * 1000
+  }).then(function(it){
+    return it.arrayBuffer();
+  }).then(function(it){
+    var href, n;
+    href = URL.createObjectURL(new Blob([new Uint8Array(it, 0, it.length)], {
+      type: "application/pdf"
+    }));
+    n = ld$.create({
+      name: 'a',
+      attr: {
+        href: href,
+        download: 'merged.pdf'
+      }
+    });
+    document.body.appendChild(n);
+    n.click();
+    return document.body.removeChild(n);
+  }).then(function(){
+    return ldld.off();
+  })['catch'](errorHandler);
+};
 print = function(payload){
   return ld$.fetch("/api/print", {
     method: 'POST'
@@ -81,17 +133,7 @@ print = function(payload){
     return document.body.removeChild(n);
   }).then(function(){
     return ldld.off();
-  })['catch'](function(it){
-    var img, timeout;
-    console.log("failed to open url: ", it);
-    ldld.off();
-    img = new Image();
-    img.onload = function(){
-      return root.appendChild(img);
-    };
-    timeout = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 150\">\n<rect x=\"0\" y=\"0\" width=\"200\" height=\"200\" fill=\"#999\"/>\n<text x=\"100\" y=\"75\" dominant-baseline=\"middle\" text-anchor=\"middle\" fill=\"#eee\" font-family=\"sans-serif\">TIMEOUT</text>\n</svg>";
-    return img.src = "data:image/svg+xml," + encodeURIComponent(timeout);
-  });
+  })['catch'](errorHandler);
 };
 get = function(payload){
   return ld$.fetch("/api/screenshot", {
@@ -116,15 +158,5 @@ get = function(payload){
     }).then(function(){
       return ldld.off();
     });
-  })['catch'](function(it){
-    var img, timeout;
-    console.log("failed to open url: ", it);
-    ldld.off();
-    img = new Image();
-    img.onload = function(){
-      return root.appendChild(img);
-    };
-    timeout = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 150\">\n<rect x=\"0\" y=\"0\" width=\"200\" height=\"200\" fill=\"#999\"/>\n<text x=\"100\" y=\"75\" dominant-baseline=\"middle\" text-anchor=\"middle\" fill=\"#eee\" font-family=\"sans-serif\">TIMEOUT</text>\n</svg>";
-    return img.src = "data:image/svg+xml," + encodeURIComponent(timeout);
-  });
+  })['catch'](errorHandler);
 };</script></body></html>

@@ -1,4 +1,10 @@
-require! <[puppeteer easy-pdf-merge node-cleanup]>
+require! <[fs puppeteer easy-pdf-merge node-cleanup tmp request]>
+
+tmpfn = ->
+  (res, rej) <- new Promise _
+  tmp.file (err, path, fd, cb) ->
+    if err => return rej err
+    res {fn: path, clean: cb}
 
 BrowserPool = (opt = {}) ->
   @opt = opt
@@ -40,23 +46,34 @@ BrowserPool.prototype = Object.create(Object.prototype) <<< do
       ret = page.pdf format: \A4
       return ret
 
+  # list: [{html, url, pdffile, pdflink}, ... ]
   merge: (payload = {}) ->
-    Promise.resolve!
-      .then ~>
-        if !payload.html => return null
-        @print {html: payload.html} .then (buf) ->
-          tmpfn!then ({fn}) ->
-            (res, rej) <- new Promise _
-            (e) <- fs.write-file fn, buf, _
-            if e => return rej new Error(e)
-            res fn
-      .then (html-fn) ->
-        if !payload.files or payload.files.length < 1 or (payload.files.length == 1 and !html-fn) =>
-          return Promise.reject(new lderror(400))
+    promises = payload.list.map (item) ~>
+      if item.html or item.url =>
+        @print(item{html, url}).then (buf) -> tmpfn!then ({fn}) ->
+          (res, rej) <- new Promise _
+          (e) <- fs.write-file fn, buf, _
+          if e => return rej new Error(e)
+          res fn
+      else if item.pdffile => return Promise.resolve(item.pdffile)
+      else if item.pdflink =>
         (res, rej) <- new Promise _
-        (e) <- easy-pdf-merge ((if html-fn => [html-fn] else []) ++ payload.files), payload.outfile, _
+        (e,r,b) <- request {url: item.pdflink, method: \GET, encoding: null}, _
+        if e => return rej new Error(e)
+        ({fn}) <- tmpfn!then _
+        (e) <- fs.write-file fn, b, _
+        if e => rej new Error(e)
+        res fn
+
+    Promise.all promises
+      .then (files) ->
+        ({fn}) <- tmpfn!then _
+        (res, rej) <- new Promise _
+        (e) <- easy-pdf-merge files, fn, _
         if e => return rej e
-        res payload.outfile
+        (e, buf) <- fs.read-file fn, _
+        if e => return rej e
+        res buf
 
   get: -> new Promise (res, rej) ~>
     for i from 0 til @pages.length =>

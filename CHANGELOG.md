@@ -8,3 +8,4 @@
  - add dockerfile for running server in container.
  - add security note about potential SSRF exploit.
  - add information about PDF merge feature
+ - show error message when api requests fail.

@@ -6,7 +6,7 @@
   "bin": {
     "pageshot": "./dist/server.js"
   },
-  "description": "a simple server accepting request to take screenshot",
+  "description": "a simple server accepting request to take website screenshot in png / pdf formats",
   "version": "0.1.0",
   "homepage": "https://github.com/plotdb/pageshot",
   "repository": {
@@ -39,7 +39,9 @@
     "easy-pdf-merge": "^0.2.6",
     "express": "^4.17.1",
     "node-cleanup": "^2.1.2",
-    "puppeteer": "^2.1.1"
+    "puppeteer": "^2.1.1",
+    "request": "^2.88.2",
+    "tmp": "^0.2.1"
   },
   "frontendDependencies": {
     "root": "web/static/assets/lib",

@@ -21,7 +21,9 @@ server = do
             .then ->
               res.contentType \image/png
               res.send it
-            .catch -> res.status 500 .send!
+            .catch ->
+              console.log it
+              res.status 500 .send!
 
         app.post \/api/print, (req, res) ->
           lc = {}
@@ -30,7 +32,20 @@ server = do
             .then ->
               res.contentType \application/pdf
               res.send it
-            .catch -> res.status 500 .send!
+            .catch ->
+              console.log it
+              res.status 500 .send!
+
+        app.post \/api/merge, (req, res) ->
+          lc = {}
+          payload = {list: req.body.list or []}
+          ss.merge payload
+            .then ->
+              res.contentType \application/pdf
+              res.send it
+            .catch ->
+              console.log it
+              res.status 500 .send!
 
         console.log "[Server] Express Initialized in #{app.get \env} Mode".green
         (res, rej) <- new Promise _

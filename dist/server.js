@@ -60,6 +60,19 @@ server = {
           return res.status(500).send();
         });
       });
+      app.post('/api/merge', function(req, res){
+        var lc, payload;
+        lc = {};
+        payload = {
+          list: req.body.list || []
+        };
+        return ss.merge(payload).then(function(it){
+          res.contentType('application/pdf');
+          return res.send(it);
+        })['catch'](function(){
+          return res.status(500).send();
+        });
+      });
       console.log(("[Server] Express Initialized in " + app.get('env') + " Mode").green);
       return new Promise(function(res, rej){
         var server;

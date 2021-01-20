@@ -39,7 +39,8 @@ server = {
         return ss.screenshot(payload).then(function(it){
           res.contentType('image/png');
           return res.send(it);
-        })['catch'](function(){
+        })['catch'](function(it){
+          console.log(it);
           return res.status(500).send();
         });
       });
@@ -56,7 +57,8 @@ server = {
         return ss.print(payload).then(function(it){
           res.contentType('application/pdf');
           return res.send(it);
-        })['catch'](function(){
+        })['catch'](function(it){
+          console.log(it);
           return res.status(500).send();
         });
       });
@@ -69,7 +71,8 @@ server = {
         return ss.merge(payload).then(function(it){
           res.contentType('application/pdf');
           return res.send(it);
-        })['catch'](function(){
+        })['catch'](function(it){
+          console.log(it);
           return res.status(500).send();
         });
       });

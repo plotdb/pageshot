@@ -6,7 +6,7 @@ tmpfn = ->
     if err => return rej err
     res {fn: path, clean: cb}
 
-BrowserPool = (opt = {}) ->
+Pageshot = (opt = {}) ->
   @opt = opt
   @count = ((opt.count or 4) <? 10000)
   @retry-count = 5
@@ -16,7 +16,7 @@ BrowserPool = (opt = {}) ->
 
   @
 
-BrowserPool.prototype = Object.create(Object.prototype) <<< do
+Pageshot.prototype = Object.create(Object.prototype) <<< do
   exec: (cb) ->
     lc = {trial: 0}
     _ = ~>
@@ -47,8 +47,12 @@ BrowserPool.prototype = Object.create(Object.prototype) <<< do
       return ret
 
   # list: [{html, url, pdffile, pdflink}, ... ]
-  merge: (payload = {}) ->
+  merge: (payload = {}, trust-input = false) ->
     promises = payload.list.map (item) ~>
+      if !trust-input =>
+        if item.url and !/^https:\/\//.exec(item.url) => return null
+        if item.pdflink and !/^https:\/\//.exec(item.pdflink) => return null
+        if item.pdffile => return null
       if item.html or item.url =>
         @print(item{html, url}).then (buf) -> tmpfn!then ({fn}) ->
           (res, rej) <- new Promise _
@@ -65,7 +69,7 @@ BrowserPool.prototype = Object.create(Object.prototype) <<< do
         if e => rej new Error(e)
         res fn
 
-    Promise.all promises
+    Promise.all promises.filter(->it)
       .then (files) ->
         ({fn}) <- tmpfn!then _
         (res, rej) <- new Promise _
@@ -91,12 +95,12 @@ BrowserPool.prototype = Object.create(Object.prototype) <<< do
 
   destroy: ->
     @pages.map ({page}) -> page.close!
-    if BrowserPool.browser => that.close!
+    if Pageshot.browser => that.close!
 
   init: ->
-    (if BrowserPool.browser => Promise.resolve(that) else puppeteer.launch({headless: true, args: <[--no-sandbox]>}))
+    (if Pageshot.browser => Promise.resolve(that) else puppeteer.launch({headless: true, args: <[--no-sandbox]>}))
       .then (browser) ~>
-        BrowserPool.browser = browser
+        Pageshot.browser = browser
         Promise.all (for i from 0 til @count => browser.newPage!then(-> {busy: false, page: it}))
       .then ~> @pages = it
 
@@ -104,7 +108,7 @@ BrowserPool.prototype = Object.create(Object.prototype) <<< do
     Promise.resolve!
       .then -> if !(obj.page.isClosed!) => page.close!
       .catch -> # failed to close. anyway, just ignore it and create a new page.
-      .then -> BrowserPool.browser.newPage!
+      .then -> Pageshot.browser.newPage!
       .then (page) ~> obj.page = page
 
-module.exports = BrowserPool
+module.exports = Pageshot

@@ -118,6 +118,13 @@ PDF merging is provided by `easy-pdf-merge`, which in turn depends on related `j
     sudo apt-get update && sudo apt-get install adoptopenjdk-8-hotspot
 
 
+## Font
+
+When generating documents with CJK characters, you may want to install related fonts in your system:
+
+    sudo apt-get fonts-noto-cjk
+
+
 ## License
 
 MIT

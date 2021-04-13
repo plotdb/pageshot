@@ -25,7 +25,7 @@ Pageshot.prototype = Object.create(Object.prototype) <<< do
         .then -> cb(lc.obj.page)
         .then -> lc.ret = it
         .catch ~>
-          if (lc.trial++) > @retry-count => return Promise.reject(new Error! <<< {id: 0, name: \ldError})
+          if (lc.trial++) > @retry-count => return Promise.reject(new Error! <<< {id: 0, name: \lderror})
           console.error "[pageshot] command failed, will retry ( #{lc.trial} ): ", it
           @respawn lc.obj .then -> _!
         .then ~> @free lc.obj
@@ -35,13 +35,13 @@ Pageshot.prototype = Object.create(Object.prototype) <<< do
   screenshot: (payload = {}) -> @exec (page) ->
     p = if payload.html => page.setContent payload.html, {waitUntil: "domcontentloaded"}
     else if payload.url => page.goto payload.url
-    else Promise.reject(new Error! <<< {id: 1015, name: \ldError, msg: "missing url or html"})
+    else Promise.reject(new Error! <<< {id: 1015, name: \lderror, msg: "missing url or html"})
     p.then -> page.screenshot!
 
   print: (payload = {}) -> @exec (page) ->
     p = if payload.html => page.setContent payload.html, {waitUntil: "networkidle0"}
     else if payload.url => page.goto payload.url
-    else Promise.reject(new ldError(1015))
+    else Promise.reject(new lderror(1015))
     p.then ->
       ret = page.pdf format: \A4
       return ret

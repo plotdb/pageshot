@@ -48,7 +48,7 @@ Pageshot.prototype = import$(Object.create(Object.prototype), {
       })['catch'](function(it){
         var ref$;
         if ((lc.trial++) > this$.retryCount) {
-          return Promise.reject((ref$ = new Error(), ref$.id = 0, ref$.name = 'ldError', ref$));
+          return Promise.reject((ref$ = new Error(), ref$.id = 0, ref$.name = 'lderror', ref$));
         }
         console.error("[pageshot] command failed, will retry ( " + lc.trial + " ): ", it);
         return this$.respawn(lc.obj).then(function(){
@@ -72,7 +72,7 @@ Pageshot.prototype = import$(Object.create(Object.prototype), {
         })
         : payload.url
           ? page.goto(payload.url)
-          : Promise.reject((ref$ = new Error(), ref$.id = 1015, ref$.name = 'ldError', ref$.msg = "missing url or html", ref$));
+          : Promise.reject((ref$ = new Error(), ref$.id = 1015, ref$.name = 'lderror', ref$.msg = "missing url or html", ref$));
       return p.then(function(){
         return page.screenshot();
       });
@@ -88,7 +88,7 @@ Pageshot.prototype = import$(Object.create(Object.prototype), {
         })
         : payload.url
           ? page.goto(payload.url)
-          : Promise.reject(new ldError(1015));
+          : Promise.reject(new lderror(1015));
       return p.then(function(){
         var ret;
         ret = page.pdf({

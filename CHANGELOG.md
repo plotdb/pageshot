@@ -1,11 +1,19 @@
-# 0.1.1
+# Change Logs
+
+## v1.0.0
+
+ - upgrade modules to resolve vulnerabilities
+ - use `lderror` instead of `ldError`
+
+
+## v0.1.1
 
  - make bin file executable.
  - require pageshot module correctly by calculating correct path to it.
  - generate dist files without livescript header.
 
 
-# 0.1.0
+## v0.1.0
 
  - kill browser process on exit with node-cleanup.
  - add print and merge functionality
